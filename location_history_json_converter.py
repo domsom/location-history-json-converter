@@ -19,10 +19,12 @@
 
 from __future__ import division
 
-import dateutil.parser
+from dateutil.parser import isoparse
+from dateutil.tz import UTC
 import sys
 import json
 import math
+# import pytz
 from argparse import ArgumentParser, ArgumentTypeError
 from datetime import datetime
 from datetime import timedelta
@@ -223,7 +225,7 @@ def _write_location(output, format, location, separator, first, last_location):
 
         # Order of these tags is important to make valid KML: TimeStamp, ExtendedData, then Point
         output.write("      <TimeStamp><when>")
-        time = datetime.utcfromtimestamp(int(location["timestampMs"]) / 1000)
+        time = isoparse(item["timestamp"])
         output.write(time.strftime("%Y-%m-%dT%H:%M:%SZ"))
         output.write("</when></TimeStamp>\n")
         if "accuracy" in location or "speed" in location or "altitude" in location:
@@ -388,7 +390,7 @@ def convert(locations, output, format="kml",
         if "longitudeE7" not in item or "latitudeE7" not in item or "timestamp" not in item:
             continue
 
-        time = dateutil.parser.parse(item["timestamp"])
+        time = isoparse(item["timestamp"])
 
         # We need the timestamp in milliseconds like everywhere...
         item["timestampMs"]=time.strftime('%s%f')
@@ -572,6 +574,13 @@ def main():
             args.enddate = args.enddate + timedelta(hours=args.endtime.hour,minutes=args.endtime.minute) - timedelta(microseconds=1)
         else:
             args.enddate = args.enddate.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    # Change the dates to UTC for comparisons
+    if args.startdate:
+        args.startdate = args.startdate.astimezone(UTC)
+
+    if args.enddate:
+        args.enddate = args.enddate.astimezone(UTC)
 
     convert(
         items, f_out,
