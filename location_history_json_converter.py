@@ -227,7 +227,6 @@ def _write_location(output, format, location, separator, first, last_location):
         # Order of these tags is important to make valid KML: TimeStamp, ExtendedData, then Point
         output.write("      <TimeStamp><when>")
         time = isoparse(location["timestamp"])
-        # time = datetime.utcfromtimestamp(int(location["timestampMs"]) / 1000)
         output.write(time.strftime("%Y-%m-%dT%H:%M:%SZ"))
         output.write("</when></TimeStamp>\n")
         if "accuracy" in location or "speed" in location or "altitude" in location:
@@ -395,7 +394,7 @@ def convert(locations, output, format="kml",
         time = isoparse(item["timestamp"])
 
         # We need the timestamp in milliseconds like everywhere...
-        # FIX: This calculation seems to be off, not sure why yet
+        # FIX: This calculation could be off, not sure why yet
         item["timestampMs"]=time.strftime('%s%f')
 
         print("\r%s / Locations written: %s" % (time.strftime("%Y-%m-%d %H:%M"), added), end="")
