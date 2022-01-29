@@ -28,6 +28,7 @@ import math
 from argparse import ArgumentParser, ArgumentTypeError
 from datetime import datetime
 from datetime import timedelta
+from dateutil import parser
 
 try:
     import ijson
@@ -391,11 +392,8 @@ def convert(locations, output, format="kml",
         if "longitudeE7" not in item or "latitudeE7" not in item or "timestamp" not in item:
             continue
 
-        time = isoparse(item["timestamp"])
-
-        # We need the timestamp in milliseconds like everywhere...
-        # FIX: This calculation could be off, not sure why yet
-        item["timestampMs"]=time.strftime('%s%f')
+        time = parser.parse(item["timestamp"])
+        item["timestampMs"] = time.timestamp()*1000
 
         print("\r%s / Locations written: %s" % (time.strftime("%Y-%m-%d %H:%M"), added), end="")
 
